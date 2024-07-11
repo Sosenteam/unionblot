@@ -6,10 +6,11 @@
 //Changeable Parameters:
 
 //
-let pointCount = 3; //Number of Points
-let maxRingSize = 177; // Maxium size of circle 
-let circleResolution = 100; // Amount of points per circle (looks best between 3-20 or 100+)
-let ringDist = 7;
+let pointCount = 50; //Number of Points
+let maxRingSize = 30; // Maxium size of circle 
+let circleResolution = 3; // Amount of points per circle (looks best between 3-20 or 50+)
+let ringDist = 0.1; // Starting Ring Distance
+let rateOfRingChange = 1.05; // Ring Distance Change 
 
 //Define Box
 const width = 125;
@@ -41,10 +42,9 @@ for (let i = 0; i < pointCount; i++) {
 for (let pointCount = 0; pointCount < pointList.length; pointCount++) {
   let point = pointList[pointCount][0]
   let circleLines = [];
-  //all circles
-  //  for (let dist = bt.randIntInRange(0, 10); dist < maxRingSize; dist += (bt.rand() + minRingDist) * 10) {
-  for (let dist = 0; dist < maxRingSize; dist += ringDist) {
-
+  let currentRingDist = ringDist; // Use a separate variable to track the current ring distance
+  for (let dist = 0; dist < maxRingSize; dist += currentRingDist) {
+    currentRingDist = currentRingDist * rateOfRingChange;
     let circle = [];
     //circle points
     for (let angle = 0; angle < 6.28; angle += 6.28 / circleResolution) {
@@ -74,8 +74,8 @@ console.log(almostLines[0][0]);
   }
 
 
-// finalLines = bt.copy(almostLines);
 for (let o = 0; o < finalLines.length; o++) {
+  //
   finalLines[o] = bt.cut(finalLines[o], bounds);
   drawLines(finalLines[o]);
 }
