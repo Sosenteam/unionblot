@@ -5,11 +5,11 @@
 */
 //Changeable Parameters:
 
-
-let pointCount = 2; //Number of Points
-let minRingDist = 1.0; //Minium Distance between circles
-let maxRingSize = 59; // Maxium size of circle
-let circleResolution = 150; // Amount of points per circle
+//
+let pointCount = 3; //Number of Points
+let maxRingSize = 177; // Maxium size of circle 
+let circleResolution = 100; // Amount of points per circle (looks best between 3-20 or 100+)
+let ringDist = 7;
 
 //Define Box
 const width = 125;
@@ -43,7 +43,7 @@ for (let pointCount = 0; pointCount < pointList.length; pointCount++) {
   let circleLines = [];
   //all circles
   //  for (let dist = bt.randIntInRange(0, 10); dist < maxRingSize; dist += (bt.rand() + minRingDist) * 10) {
-  for (let dist = 0; dist < maxRingSize; dist += 10) {
+  for (let dist = 0; dist < maxRingSize; dist += ringDist) {
 
     let circle = [];
     //circle points
@@ -65,10 +65,14 @@ console.log(almostLines[0][0]);
 // keep within edges
 // 
 //draw lines
+  for (let r = 0; r < almostLines[0].length; r++) {
+    let mergedLines = [almostLines[0][r]];
+    for(let p = 1; p < pointCount; p++){
+      mergedLines = (bt.union(mergedLines, [almostLines[p][r]]));
+    }
+    finalLines.push(mergedLines);
+  }
 
-for(let r = 0; r < 6; r++){
-  finalLines.push(bt.xor([almostLines[0][r]],[almostLines[1][r]]));
-}
 
 // finalLines = bt.copy(almostLines);
 for (let o = 0; o < finalLines.length; o++) {
