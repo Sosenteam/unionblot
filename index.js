@@ -1,21 +1,23 @@
 /*
-@title: InterlappingCircles
+@title: UnionedCircles
 @author: sosenteam
-@snapshot: interlappingCirclePhoto.png
+@snapshot: photo1.png
 */
 //Changeable Parameters:
 
 //
-let pointCount = 50; //Number of Points
-let maxRingSize = 30; // Maxium size of circle 
+let pointCount = 5; //Number of Points
+let maxRingSize = 177; // Maxium size of circle (177 will always reach edge of screen)
 let circleResolution = 3; // Amount of points per circle (looks best between 3-20 or 50+)
-let ringDist = 0.1; // Starting Ring Distance
-let rateOfRingChange = 1.05; // Ring Distance Change 
+let ringDist = 1; // Starting Ring Distance
+let rateOfRingChange = 1.25; // Ring Distance Change 
+let mergeLines = true // Connect Lines
 
 //Define Box
 const width = 125;
 const height = 125;
 setDocDimensions(width, height);
+
 //Define Edges for cut opperation
 let bounds = [
   [
@@ -36,13 +38,13 @@ let pointList = [];
 for (let i = 0; i < pointCount; i++) {
   pointList.push([randomPoint()]);
 }
-//for each point, draw multiple circles around the point using the unit circle (woo trig!)
 
+//for each point, draw multiple circles around the point using the unit circle (woo trig!)
 // all points
-for (let pointCount = 0; pointCount < pointList.length; pointCount++) {
-  let point = pointList[pointCount][0]
-  let circleLines = [];
-  let currentRingDist = ringDist; // Use a separate variable to track the current ring distance
+for (let pc = 0; pc < pointList.length; pc++) {
+  let point = pointList[pc][0]
+  let circleLines = []; // for containing all rings of one point
+  let currentRingDist = ringDist;
   for (let dist = 0; dist < maxRingSize; dist += currentRingDist) {
     currentRingDist = currentRingDist * rateOfRingChange;
     let circle = [];
@@ -54,28 +56,30 @@ for (let pointCount = 0; pointCount < pointList.length; pointCount++) {
 
     }
     // //Add each circle to the final draw list
-    // finalLines.push(circle);
     circleLines.push(circle);
 
   }
   almostLines.push(circleLines);
 }
-console.log(almostLines);
-console.log(almostLines[0][0]);
-// keep within edges
-// 
-//draw lines
+
+
+//Merge Lines
+if (mergeLines) {
+  //union all lines, going by ring 
   for (let r = 0; r < almostLines[0].length; r++) {
     let mergedLines = [almostLines[0][r]];
-    for(let p = 1; p < pointCount; p++){
+    for (let p = 1; p < pointCount; p++) {
       mergedLines = (bt.union(mergedLines, [almostLines[p][r]]));
     }
     finalLines.push(mergedLines);
   }
-
-
+} else {
+  //Copy Lines from pre-merged lines
+  finalLines = bt.copy(almostLines);
+}
+//Cut and Draw Lines
 for (let o = 0; o < finalLines.length; o++) {
-  //
+  //Keep Lines in Bounds
   finalLines[o] = bt.cut(finalLines[o], bounds);
   drawLines(finalLines[o]);
 }
