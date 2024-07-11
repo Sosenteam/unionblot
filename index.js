@@ -6,9 +6,9 @@
 //Changeable Parameters:
 
 
-let pointCount = 5; //Number of Points
+let pointCount = 2; //Number of Points
 let minRingDist = 1.0; //Minium Distance between circles
-let maxRingSize = 50; // Maxium size of circle
+let maxRingSize = 59; // Maxium size of circle
 let circleResolution = 150; // Amount of points per circle
 
 //Define Box
@@ -17,14 +17,17 @@ const height = 125;
 setDocDimensions(width, height);
 //Define Edges for cut opperation
 let bounds = [
-  [0, 0],
-  [width, 0],
-  [width, height],
-  [0, height]
+  [
+    [0, 0],
+    [width, 0],
+    [width, height],
+    [0, height]
+  ]
 ];
 
 
 // final lines
+let almostLines = [];
 let finalLines = [];
 
 // create a list of points
@@ -32,36 +35,46 @@ let pointList = [];
 for (let i = 0; i < pointCount; i++) {
   pointList.push([randomPoint()]);
 }
-
 //for each point, draw multiple circles around the point using the unit circle (woo trig!)
+
+// all points
 for (let pointCount = 0; pointCount < pointList.length; pointCount++) {
   let point = pointList[pointCount][0]
+  let circleLines = [];
+  //all circles
+  //  for (let dist = bt.randIntInRange(0, 10); dist < maxRingSize; dist += (bt.rand() + minRingDist) * 10) {
+  for (let dist = 0; dist < maxRingSize; dist += 10) {
 
-  for (let dist = bt.randIntInRange(0, 10); dist < maxRingSize; dist += (bt.rand() + minRingDist) * 10) {
     let circle = [];
-    //angle goes to 6.28 (2pi radians). 200 is the amount of points in the circle (resolution of circle)
+    //circle points
     for (let angle = 0; angle < 6.28; angle += 6.28 / circleResolution) {
       let x = point[0] + (Math.cos(angle) * (dist));
       let y = point[1] + (Math.sin(angle) * (dist));
       circle.push([x, y]);
+
     }
-    //Add each circle to the final draw list
-    finalLines.push(circle);
+    // //Add each circle to the final draw list
+    // finalLines.push(circle);
+    circleLines.push(circle);
+
   }
+  almostLines.push(circleLines);
+}
+console.log(almostLines);
+console.log(almostLines[0][0]);
+// keep within edges
+// 
+//draw lines
+
+for(let r = 0; r < 6; r++){
+  finalLines.push(bt.xor([almostLines[0][r]],[almostLines[1][r]]));
 }
 
-
-// keep within edges
-finalLines = bt.cut(finalLines, [
-  [
-    [0, 0],
-    [width, 0],
-    [width, height],
-    [0, height]
-  ]
-]);
-//draw lines
-drawLines(finalLines);
+// finalLines = bt.copy(almostLines);
+for (let o = 0; o < finalLines.length; o++) {
+  finalLines[o] = bt.cut(finalLines[o], bounds);
+  drawLines(finalLines[o]);
+}
 
 //Generate random point in graph
 function randomPoint() {
