@@ -15,17 +15,15 @@ const finalLines = [];
 let pointList = [
   [
     [50, 50]
-  ]
+  ],
 ];
-// for(let i = 0; i < 5; i++){
-//   pointList.push([randomPoint()]);
-// }
-
-let point = pointList[0][0]
-for (let dist = 10; dist < 100; dist += 20) {
-  let dist = 10;
+for(let i = 0; i < 5; i++){
+  pointList.push([randomPoint()]);
+}
+for(let pointCount = 0; pointCount<pointList.length;pointCount++){
+let point = pointList[pointCount][0]
+for (let dist = 10; dist < 50; dist += 10) {
   let circle = [];
-
 
   for (let a = 0; a < 6.28; a += 6.28 / 200) {
     let x = point[0] + (Math.cos(a) * dist);
@@ -33,11 +31,12 @@ for (let dist = 10; dist < 100; dist += 20) {
     circle.push([x, y]);
   }
 
+  finalLines.push(circle);
+}
 }
 
-
 // add the polyline to the final lines
-finalLines.push(circle);
+// finalLines.push(circleList);
 
 // transform lines using the toolkit
 
