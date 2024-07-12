@@ -1,17 +1,19 @@
 /*
-@title: UnionedCircles
+@title: InterlappingCircles
 @author: sosenteam
-@snapshot: photo1.png
+@snapshot: interlappingCirclePhoto.png
 */
 //Changeable Parameters:
 
 //
-let pointCount = 5; //Number of Points
+let pointCount = 1; //Number of Points
 let maxRingSize = 177; // Maxium size of circle (177 will always reach edge of screen)
-let circleResolution = 3; // Amount of points per circle (looks best between 3-20 or 50+)
+let circleResolution = 200; // Amount of points per circle (looks best between 3-20 or 50+)
 let ringDist = 1; // Starting Ring Distance
 let rateOfRingChange = 1.25; // Ring Distance Change 
 let mergeLines = true // Connect Lines
+let horizontalShift = 0;
+let verticleShift = -0;
 
 //Define Box
 const width = 125;
@@ -52,11 +54,20 @@ for (let pc = 0; pc < pointList.length; pc++) {
     for (let angle = 0; angle < 6.28; angle += 6.28 / circleResolution) {
       let x = point[0] + (Math.cos(angle) * (dist));
       let y = point[1] + (Math.sin(angle) * (dist));
+      x += dist * horizontalShift;
+      y += dist * verticleShift;
       circle.push([x, y]);
 
     }
     // //Add each circle to the final draw list
     circleLines.push(circle);
+    //figure out bt.offset
+    let modCircle = bt.iteratePoints([circle], (pt, t) => {
+      let [x, y] = pt;
+      // Move each point up by 5mm
+      return [x, y + 5];
+    });
+    circleLines.push(modCircle);
 
   }
   almostLines.push(circleLines);
