@@ -1,23 +1,28 @@
 /*
-@title: InterlappingCircles
+@title: UnionedPolygons
 @author: sosenteam
-@snapshot: interlappingCirclePhoto.png
+@snapshot: photo1.png
 */
 //Changeable Parameters:
-
-//
-let pointCount = 1; //Number of Points
-let maxRingSize = 177; // Maxium size of circle (177 will always reach edge of screen)
-let circleResolution = 200; // Amount of points per circle (looks best between 3-20 or 50+)
+let pointCount = 2; //Number of Points
+let circleResolution = 150; // Amount of points per ring (looks best between 3-20 or 150+)
+let maxRingSize = 200; // Maxium size of ring
 let ringDist = 1; // Starting Ring Distance
 let rateOfRingChange = 1.25; // Ring Distance Change 
 let mergeLines = true // Connect Lines
-let horizontalShift = 0;
-let verticleShift = -0;
-
+//SHIFT
+let horizontalShift = -0.5; // Recommended -1-1
+let verticleShift = -0.2; // Recommended -1-1
+//OFFSET
+let offsetEnabled = true;
 //Define Box
 const width = 125;
 const height = 125;
+
+//Code Start ----------------------------------------------------------------------------
+const ringCount = Math.floor(Math.log(maxRingSize / ringDist) / Math.log(rateOfRingChange)) + 1;
+//
+
 setDocDimensions(width, height);
 
 //Define Edges for cut opperation
@@ -61,32 +66,39 @@ for (let pc = 0; pc < pointList.length; pc++) {
     }
     // //Add each circle to the final draw list
     circleLines.push(circle);
-    //figure out bt.offset
-    let modCircle = bt.iteratePoints([circle], (pt, t) => {
-      let [x, y] = pt;
-      // Move each point up by 5mm
-      return [x, y + 5];
-    });
-    circleLines.push(modCircle);
-
   }
   almostLines.push(circleLines);
 }
 
 
+
 //Merge Lines
 if (mergeLines) {
   //union all lines, going by ring 
-  for (let r = 0; r < almostLines[0].length; r++) {
+  for (let r = 0; r < almostLines[0].length; r += 1) {
     let mergedLines = [almostLines[0][r]];
     for (let p = 1; p < pointCount; p++) {
       mergedLines = (bt.union(mergedLines, [almostLines[p][r]]));
+    }
+    if (offsetEnabled) {
+    const modifiedPolylines = bt.iteratePoints(bt.copy(mergedLines), (pt, t) => {
+      const [x, y] = pt;
+      return [x + Math.cos((t * 6.28)), y + Math.sin(t * 6.28)];
+    });
+    finalLines.push(modifiedPolylines);
     }
     finalLines.push(mergedLines);
   }
 } else {
   //Copy Lines from pre-merged lines
   finalLines = bt.copy(almostLines);
+  if (offsetEnabled) {
+    const modifiedPolylines = bt.iteratePoints(bt.copy(almostLines), (pt, t) => {
+      const [x, y] = pt;
+      return [x + Math.cos((t * 6.28)), y + Math.sin(t * 6.28)];
+    });
+    finalLines.push(modifiedPolylines);
+    }
 }
 //Cut and Draw Lines
 for (let o = 0; o < finalLines.length; o++) {
