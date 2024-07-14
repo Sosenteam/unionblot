@@ -7,25 +7,25 @@
 let pointCount = 5; //Number of Points
 let circleResolution = 12; // Amount of points per ring (looks best between 3-20 or 150+)
 let maxRingSize = 510; // Maxium size of ring
-let ringDist = 0.8; // Starting Ring Distance
-let rateOfRingChange = 1.02; // Ring Distance Change
-let thickness = 2;
+let ringDist = 1; // Starting Ring Distance
+let rateOfRingChange = 1.11; // Ring Distance Change
+let thickness = 1;
 let mergeLines = true // Connect Lines
 let colorEnabled = false; // Chooses Random Colors
 //Noise
-let wavyAmount = 9; // Adds Distortion (0 for off)
+let wavyAmount = 4; // Adds Distortion (0 for off)
 //Squash
 let squashMode = 1; // 1 Controlled by xSquash/ySquash, 2 is random, controlled by squashRandomMax
-let xSquash = 0; //Only Mode 1
-let ySquash = 0; //Only Mode 1
+let xSquash = 1.5; //Only Mode 1
+let ySquash = -1.5; //Only Mode 1
 let squashRandomMax = 0.1; //Only Mode 2 (Takes a While)
 //SHIFT
-let randomizeShift = true; // Overrides horizontalShift and verticleShift
+let randomizeShift = false; // Overrides horizontalShift and verticleShift
 let horizontalShift = -0.3; // Recommended -1-1
-let verticleShift = .7; // Recommended -1-1
+let verticleShift = .5; // Recommended -1-1
 //OFFSET
-let offsetEnabled = true;
-let offsetDistance = 1;
+let offsetEnabled = false;
+let offsetDistance = 0;
 
 //Define Box
 const width = 125;
@@ -66,17 +66,22 @@ for (let i = 0; i < pointCount; i++) {
 // all points
 for (let pc = 0; pc < pointList.length; pc++) {
   let point = pointList[pc][0]
+  //Randomize Shift Amounts
   if (randomizeShift) {
-    horizontalShift = bt.randInRange(-0.5, 0.5);
-    verticleShift = bt.randInRange(-0.5, 0.5);
+    horizontalShift = bt.randInRange(-0.4, 0.4);
+    verticleShift = bt.randInRange(-0.4, 0.4);
   }
   let circleLines = []; // for containing all rings of one point
   let currentRingDist = ringDist;
-  for (let dist = 0; dist < maxRingSize; dist += currentRingDist) {
+  for (let dist = ringDist; dist < maxRingSize; dist += currentRingDist) {
     currentRingDist = currentRingDist * rateOfRingChange;
     let circle = [];
     //circle points
     for (let angle = 0; angle < 6.28; angle += 6.28 / circleResolution) {
+      if(dist == ringDist){
+        circle.push([point[0] + (Math.cos(angle) * dist)+horizontalShift/2, point[1] + (Math.sin(angle) * dist)+verticleShift/2]);
+        continue;
+      }
       //Add Waves
       let newDist = dist;
       newDist += (bt.noise(bt.rand() * 2, bt.rand() * 2, bt.rand() * 2) * wavyAmount);
@@ -123,6 +128,8 @@ if (mergeLines) {
           finalLines.push(offsetPolyline);
         }
       }
+    }else{
+      finalLines.push(mergedLines);
     }
   }
 } else {
@@ -144,23 +151,15 @@ let colorNum = bt.randIntInRange(0, 50);
 for (let o = 0; o < finalLines.length; o++) {
 
 
-
-  const modifiedPolylines = bt.iteratePoints(finalLines[o], (pt, t) => {
-    const [x, y] = pt;
-    let inside;
-    if(o+1 > finalLines.length){
-       inside =  bt.pointInside(finalLines[0], pt)
-    }else{
-       inside =  bt.pointInside(finalLines[o+1], pt)
-    }
-    if(inside){
-      
-    }
-    return [x,y];
-  });
-  if (o < finalLines.length / 2) {
-    finalLines[o] = bt.xor(modifiedPolylines, finalLines[o + 1]);
-  }
+  //add rounding if needed
+  // const modifiedPolylines = bt.iteratePoints(finalLines[o], (pt, t) => {
+  //   const [x, y] = pt;
+  //   return [Math.round(x * 10) / 10, Math.round(y * 10) / 10];
+  // });\
+  //xor lines (doesn't work)
+  // if (o < finalLines.length / 2) {
+  //   finalLines[o] = bt.xor(modifiedPolylines, finalLines[o + 1]);
+  // }
   //Keep Lines in Bounds
   //finalLines[o] = bt.cut(modifiedPolylines, bounds);
   finalLines[o] = bt.cut(finalLines[o], bounds);
