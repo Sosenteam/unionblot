@@ -4,23 +4,23 @@
 @snapshot: cover.png
 */
 //Changeable Parameters:
-let pointCount = 50; //Number of Points
-let circleResolution =200; // Amount of points per ring (looks best between 3-20 or 150+)
+let pointCount = 5; //Number of Points
+let circleResolution = 12; // Amount of points per ring (looks best between 3-20 or 150+)
 let maxRingSize = 510; // Maxium size of ring
 let ringDist = 0.8; // Starting Ring Distance
 let rateOfRingChange = 1.02; // Ring Distance Change
 let thickness = 2;
 let mergeLines = true // Connect Lines
-let colorEnabled = true; // Chooses Random Colors
+let colorEnabled = false; // Chooses Random Colors
 //Noise
-let wavyAmount = 2; // Adds Distortion (0 for off)
+let wavyAmount = 9; // Adds Distortion (0 for off)
 //Squash
 let squashMode = 1; // 1 Controlled by xSquash/ySquash, 2 is random, controlled by squashRandomMax
-let xSquash = 1; //Only Mode 1
-let ySquash = -1; //Only Mode 1
+let xSquash = 0; //Only Mode 1
+let ySquash = 0; //Only Mode 1
 let squashRandomMax = 0.1; //Only Mode 2 (Takes a While)
 //SHIFT
-let randomizeShift = false; // Overrides horizontalShift and verticleShift
+let randomizeShift = true; // Overrides horizontalShift and verticleShift
 let horizontalShift = -0.3; // Recommended -1-1
 let verticleShift = .7; // Recommended -1-1
 //OFFSET
@@ -37,8 +37,8 @@ const CSS_COLORS = [
   'dodgerblue', 'crimson', 'springgreen', 'goldenrod', 'indigo',
   'coral', 'deeppink', 'sienna', 'turquoise', 'slategray'
 ];
-xSquash+=0.001; //Keeps from freezing
-ySquash+=0.001; //Keeps from freezing
+xSquash += 0.001; //Keeps from freezing
+ySquash += 0.001; //Keeps from freezing
 setDocDimensions(width, height);
 
 //Define Edges for cut opperation
@@ -67,8 +67,8 @@ for (let i = 0; i < pointCount; i++) {
 for (let pc = 0; pc < pointList.length; pc++) {
   let point = pointList[pc][0]
   if (randomizeShift) {
-    horizontalShift = bt.randInRange(-0.7, 0.7);
-    verticleShift = bt.randInRange(-0.7, 0.7);
+    horizontalShift = bt.randInRange(-0.5, 0.5);
+    verticleShift = bt.randInRange(-0.5, 0.5);
   }
   let circleLines = []; // for containing all rings of one point
   let currentRingDist = ringDist;
@@ -79,20 +79,19 @@ for (let pc = 0; pc < pointList.length; pc++) {
     for (let angle = 0; angle < 6.28; angle += 6.28 / circleResolution) {
       //Add Waves
       let newDist = dist;
-      newDist+=(bt.noise(bt.rand()*2,bt.rand()*2,bt.rand()*2)*wavyAmount);
+      newDist += (bt.noise(bt.rand() * 2, bt.rand() * 2, bt.rand() * 2) * wavyAmount);
       //Add Points
       let oldX = point[0];
       let oldY = point[1];
-      if(squashMode == 1){
-        oldX = oldX+Math.cos(angle)*xSquash;
-        oldY = oldY+Math.cos(angle)*ySquash;
+      if (squashMode == 1) {
+        oldX = oldX + Math.cos(angle) * xSquash;
+        oldY = oldY + Math.cos(angle) * ySquash;
+      } else if (squashMode == 2 && dist > 10) {
+        oldX = oldX + Math.cos(angle) * bt.randInRange(-squashRandomMax, squashRandomMax);
+        oldY = oldY + Math.cos(angle) * bt.randInRange(-squashRandomMax, squashRandomMax);
       }
-      else if(squashMode == 2 && dist > 10){
-      oldX = oldX+Math.cos(angle)*bt.randInRange(-squashRandomMax,squashRandomMax);
-      oldY = oldY+Math.cos(angle)*bt.randInRange(-squashRandomMax,squashRandomMax);
-      }
-      let x = oldX + (Math.cos(angle)*dist);
-      let y = oldY + (Math.sin(angle)*dist);
+      let x = oldX + (Math.cos(angle) * dist);
+      let y = oldY + (Math.sin(angle) * dist);
       x += (newDist * horizontalShift);
       y += (newDist * verticleShift);
       circle.push([x, y]);
@@ -111,10 +110,11 @@ if (mergeLines) {
   //union all lines, going by ring 
   for (let r = 0; r < almostLines[0].length; r += 1) {
     let mergedLines = [almostLines[0][r]];
+
     for (let p = 1; p < pointCount; p++) {
       mergedLines = bt.union(mergedLines, [almostLines[p][r]]);
     }
-    finalLines.push(mergedLines);
+    //finalLines.push(mergedLines);
     if (offsetEnabled) {
       // Apply offset to each individual polyline in mergedLines
       for (let i = 0; i < mergedLines.length; i++) {
@@ -129,21 +129,45 @@ if (mergeLines) {
   //Copy Lines from pre-merged lines
   finalLines = bt.copy(almostLines);
   if (offsetEnabled) {
-      // Apply offset to each individual polyline in mergedLines
-      for (let i = 0; i < mergedLines.length; i++) {
-        const offsetPolyline = bt.offset([mergedLines[i]], offsetDistance);
-        if (offsetPolyline && offsetPolyline.length > 0) {
-          finalLines.push(offsetPolyline);
-        }
+    // Apply offset to each individual polyline in mergedLines
+    for (let i = 0; i < mergedLines.length; i++) {
+      const offsetPolyline = bt.offset([mergedLines[i]], offsetDistance);
+      if (offsetPolyline && offsetPolyline.length > 0) {
+        finalLines.push(offsetPolyline);
       }
     }
+  }
 }
+
 let colorNum = bt.randIntInRange(0, 50);
 //Cut and Draw Lines
 for (let o = 0; o < finalLines.length; o++) {
+
+
+
+  const modifiedPolylines = bt.iteratePoints(finalLines[o], (pt, t) => {
+    const [x, y] = pt;
+    let inside;
+    if(o+1 > finalLines.length){
+       inside =  bt.pointInside(finalLines[0], pt)
+    }else{
+       inside =  bt.pointInside(finalLines[o+1], pt)
+    }
+    if(inside){
+      
+    }
+    return [x,y];
+  });
+  if (o < finalLines.length / 2) {
+    finalLines[o] = bt.xor(modifiedPolylines, finalLines[o + 1]);
+  }
   //Keep Lines in Bounds
-  let colorNum = bt.randIntInRange(0, 10);
+  //finalLines[o] = bt.cut(modifiedPolylines, bounds);
   finalLines[o] = bt.cut(finalLines[o], bounds);
+  //
+
+  //Color 
+  let colorNum = bt.randIntInRange(0, 10);
   if (colorEnabled) {
     drawLines(finalLines[o], { stroke: CSS_COLORS[colorNum], width: thickness });
   } else {
